@@ -55,6 +55,14 @@ class Products with ChangeNotifier {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
+ /*
+  void removeProduct(String id){
+    _items.removeWhere((prod)=>prod.id==id);
+    notifyListeners();
+  }
+  */
+
+
   void changeFavouriteById(int index) {
     _items[index].isFavourite = !_items[index].isFavourite;
     notifyListeners();

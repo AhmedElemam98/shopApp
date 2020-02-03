@@ -59,9 +59,25 @@ class Cart extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearCart()
-  {
-    _items={};
+  void removeSingleItem(String productKey) {
+    if (!_items.containsKey(productKey)) return;
+    if (_items[productKey].quantity > 1) {
+      _items.update(
+          productKey,
+          (existingCartItem) => CartItem(
+                id: existingCartItem.id,
+                price: existingCartItem.price,
+                title: existingCartItem.title,
+                quantity: existingCartItem.quantity - 1,
+              ));
+    } else {
+      _items.remove(productKey);
+    }
+    notifyListeners();
+  }
+
+  void clearCart() {
+    _items = {};
     notifyListeners();
   }
 }
