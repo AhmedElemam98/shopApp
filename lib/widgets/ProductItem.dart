@@ -47,7 +47,8 @@ class ProductItem extends StatelessWidget {
               icon: Icon(Icons.shopping_cart),
               onPressed: () {
                 cart.addItem(product.id, product.price, product.title);
-                Scaffold.of(context).hideCurrentSnackBar();//3lshan lw d7't mrten wra ba3d y3'fey el2ola
+                Scaffold.of(context)
+                    .hideCurrentSnackBar(); //3lshan lw d7't mrten wra ba3d y3'fey el2ola
                 Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text('Added to card!'),
                   backgroundColor: Colors.black87,
@@ -58,7 +59,7 @@ class ProductItem extends StatelessWidget {
                       cart.removeSingleItem(product.id);
                     },
                   ),
-                ));//Attached to the nearest Scaffold
+                )); //Attached to the nearest Scaffold
               },
             )),
       ),

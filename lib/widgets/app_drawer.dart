@@ -10,29 +10,30 @@ class AppDrawer extends StatelessWidget {
         children: <Widget>[
           AppBar(
             title: Text('Hello Friend!'),
-            automaticallyImplyLeading: false,//No back icon
+            automaticallyImplyLeading: false, //No back icon
           ),
           Divider(),
           ListTile(
             leading: Icon(Icons.shop),
             title: Text('Shop'),
-            onTap:()=> Navigator.of(context).pushReplacementNamed('/'),
+            onTap: () => Navigator.of(context).pushReplacementNamed('/'),
           ),
-                    Divider(),
+          Divider(),
           ListTile(
             leading: Icon(Icons.payment),
             title: Text('Orders'),
-            onTap:()=> Navigator.of(context).pushReplacementNamed(OrdersScreen.routeName),
+            onTap: () => Navigator.of(context)
+                .pushReplacementNamed(OrdersScreen.routeName),
           ),
           Divider(),
-                    ListTile(
+          ListTile(
             leading: Icon(Icons.payment),
             title: Text('Manage Products'),
-            onTap:()=> Navigator.of(context).pushReplacementNamed(UserProductsScreen.routeName),
+            onTap: () => Navigator.of(context)
+                .pushReplacementNamed(UserProductsScreen.routeName),
           ),
         ],
       ),
-      
     );
   }
 }
