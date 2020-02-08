@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/products.dart';
 import '../providers/Cart.dart';
 import '../widgets/Products_grid.dart';
 import '../widgets/badge.dart';
@@ -18,6 +19,42 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorites = false;
+  var _isInit = true;
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    //await Provider.of<Products>(context,listen: false).fetchAndSetProducts();
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      //Momken a3mla with try..catch 
+      //hna lw 7'let 'then' b3d 'catch error' httnfz 3ady F lazm t7'leha a7'r 7aga 3lshan 'then' mattnfssh Lw feh error
+      Provider.of<Products>(context).fetchAndSetProducts().then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      }).catchError((error) {
+                setState(() {
+          _isLoading = false;
+        });
+        print('error');
+      });
+      
+      _isInit = false;
+    }
+    super.didChangeDependencies();
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     var scaffold = Scaffold(
@@ -65,7 +102,11 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(_showOnlyFavorites),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : RefreshIndicator(onRefresh:()=>Provider.of<Products>(context).fetchAndSetProducts(),child: ProductsGrid(_showOnlyFavorites)),
     );
     return scaffold;
   }
