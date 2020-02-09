@@ -60,13 +60,12 @@ class Products with ChangeNotifier {
 
       jsonResponse.forEach((prodId, prodValue) {
         loadedProducts.add(Product(
-          id: prodId,
-          title: prodValue['title'],
-          description: prodValue['description'],
-          imageUrl: prodValue['imageUrl'],
-          price: prodValue['price'],
-          isFavourite: prodValue['isFavourite']
-        ));
+            id: prodId,
+            title: prodValue['title'],
+            description: prodValue['description'],
+            imageUrl: prodValue['imageUrl'],
+            price: prodValue['price'],
+            isFavourite: prodValue['isFavourite']));
       });
 
       _items = loadedProducts;
@@ -78,59 +77,40 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url = "https://shop-app-79238.firebaseio.com/products";
-    final response = await http
-        .post(url,
-            body: json.encode({
-              'title': product.title,
-              'description': product.description,
-              'price': product.price,
-              'imageUrl': product.imageUrl,
-              'isFavourite': product.isFavourite,
-            }))
-        .then((response) {
-      if (!(response.statusCode >= 200 && response.statusCode < 300)) {
-        throw Exception('error occured');
-      }
-    }).catchError((error) {
+    const url = "https://shop-app-79238.firebaseio.com/products.json";
+
+    //Momken a3mla Be .then W .catch error bdl el 'try..catch'
+    try {
+      final response = await http.post(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'price': product.price,
+            'imageUrl': product.imageUrl,
+            'isFavourite': product.isFavourite,
+          }));
+
+      // print('status code is${response.statusCode}');
+      final newProduct = Product(
+        id: json.decode(response.body)['name'],
+        description: product.description,
+        imageUrl: product.imageUrl,
+        price: product.price,
+        title: product.title,
+      );
+
+      _items.add(newProduct);
+      notifyListeners();
+    } catch (error) {
       throw error;
-    });
+    }
   }
-
-  // Future<void> addProduct(Product product) async {
-  //   const url = "https://shop-app-79238.firebaseio.com/";
-
-  //   //Momken a3mla Be .then W .catch error bdl el 'try..catch'
-  //   try {
-  //     final response = await http.post(url,
-  //         body: json.encode({
-  //           'title': product.title,
-  //           'description': product.description,
-  //           'price': product.price,
-  //           'imageUrl': product.imageUrl,
-  //           'isFavourite': product.isFavourite,
-  //         }));
-
-  //     // print('status code is${response.statusCode}');
-  //     final newProduct = Product(
-  //       id: json.decode(response.body)['name'],
-  //       description: product.description,
-  //       imageUrl: product.imageUrl,
-  //       price: product.price,
-  //       title: product.title,
-  //     );
-
-  //     _items.add(newProduct);
-  //     notifyListeners();
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
 
   Future<void> updateProduct(String productId, Product newProduct) async {
     int prodIndex = _items.indexWhere((prod) => prod.id == productId);
     if (prodIndex >= 0) {
-      var url = "https://shop-app-79238.firebaseio.com/";
+      var url =
+          "https://shop-app-79238.firebaseio.com/products/$productId.json";
       //patch bt3ml override aw merge bm3na as7 so,msh h3'er el isFavourite
       await http
           .patch(url,
@@ -156,9 +136,20 @@ class Products with ChangeNotifier {
   }
 
   Future<void> removeProduct(String id) async {
-    var url = "https://shop-app-79238.firebaseio.com/products/$id";
-    await http.delete(url);
+    var url = "https://shop-app-79238.firebaseio.com/products/$id.json";
+    var existingProduct = _items.firstWhere((prod) => prod.id == id);
+    var existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     _items.removeWhere((prod) => prod.id == id);
+    notifyListeners();
+
+    try {
+      final response = await http.delete(url);
+      if (!(response.statusCode >= 200 && response.statusCode < 300)) {
+        _items.insert(existingProductIndex, existingProduct);
+      }
+    } catch (error) {
+      _items.insert(existingProductIndex, existingProduct);
+    }
     notifyListeners();
   }
 
@@ -167,3 +158,9 @@ class Products with ChangeNotifier {
     notifyListeners();
   }
 }
+
+//TODO:Make FutureBuilder In screens with stateless widget so you don't have to use Init State or didChangeState
+//TODO:In OrderScreen,Please Make Consumer instead of rebuild all the screen
+
+
+
