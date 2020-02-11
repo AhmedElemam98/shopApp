@@ -4,6 +4,11 @@ import 'dart:convert';
 import './product.dart';
 
 class Products with ChangeNotifier {
+  final String _authToken;
+  final String _userId;
+
+  Products(this._authToken, this._userId, this._items);
+
   List<Product> _items = [
     /*Product(
       id: 'p1',
@@ -49,23 +54,34 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fetchAndSetProducts() async {
-    const url = "https://shop-app-79238.firebaseio.com/products.json";
+    var url =
+        "https://shop-app-79238.firebaseio.com/products.json?auth=$_authToken";
 
     try {
-      final jsonString = await http.get(url);
+      final dataResponse = await http.get(url);
 
-      final jsonResponse = json.decode(jsonString.body) as Map<String, dynamic>;
+      final extractedData =
+          json.decode(dataResponse.body) as Map<String, dynamic>;
+
+      if (extractedData == null) return;
+
+      url =
+          "https://shop-app-79238.firebaseio.com/userFavourites/$_userId.json?auth=$_authToken";
+
+      final favouriteResponse = await http.get(url);
+
+      final favouriteData = json.decode(favouriteResponse.body);
 
       final List<Product> loadedProducts = [];
 
-      jsonResponse.forEach((prodId, prodValue) {
+      extractedData.forEach((prodId, prodValue) {
         loadedProducts.add(Product(
             id: prodId,
             title: prodValue['title'],
             description: prodValue['description'],
             imageUrl: prodValue['imageUrl'],
             price: prodValue['price'],
-            isFavourite: prodValue['isFavourite']));
+            isFavourite: favouriteData==null?false:favouriteData[prodId]??false));//if favouriteData[prodId] isn't null take its value ,else,take false
       });
 
       _items = loadedProducts;
@@ -77,7 +93,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url = "https://shop-app-79238.firebaseio.com/products.json";
+    final url =
+        "https://shop-app-79238.firebaseio.com/products.json?auth=$_authToken";
 
     //Momken a3mla Be .then W .catch error bdl el 'try..catch'
     try {
@@ -87,7 +104,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'price': product.price,
             'imageUrl': product.imageUrl,
-            'isFavourite': product.isFavourite,
+            //'isFavourite': product.isFavourite,
           }));
 
       // print('status code is${response.statusCode}');
@@ -109,8 +126,8 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(String productId, Product newProduct) async {
     int prodIndex = _items.indexWhere((prod) => prod.id == productId);
     if (prodIndex >= 0) {
-      var url =
-          "https://shop-app-79238.firebaseio.com/products/$productId.json";
+      final url =
+          "https://shop-app-79238.firebaseio.com/products/$productId.json?auth=$_authToken";
       //patch bt3ml override aw merge bm3na as7 so,msh h3'er el isFavourite
       await http
           .patch(url,
@@ -136,7 +153,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> removeProduct(String id) async {
-    var url = "https://shop-app-79238.firebaseio.com/products/$id.json";
+    final url =
+        "https://shop-app-79238.firebaseio.com/products/$id.json?auth=$_authToken";
     var existingProduct = _items.firstWhere((prod) => prod.id == id);
     var existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     _items.removeWhere((prod) => prod.id == id);
@@ -161,6 +179,4 @@ class Products with ChangeNotifier {
 
 //TODO:Make FutureBuilder In screens with stateless widget so you don't have to use Init State or didChangeState
 //TODO:In OrderScreen,Please Make Consumer instead of rebuild all the screen
-
-
-
+//TODO:THROWING EXCEPTION 'ERROR' WHEN STATUS CODE IS MORE THAN 400 BECAUSE FLUTTER DOEN'T MAKE IT AS ERROR

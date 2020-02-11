@@ -33,7 +33,8 @@ class _OrderItemState extends State<OrderItem> {
                 },
               ),
             ),
-            if (_expanded)
+            //if (_expanded)
+             (_expanded)?
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 15, vertical: 4),
                 height: min(widget.order.products.length * 20.0 + 10, 180),
@@ -56,7 +57,7 @@ class _OrderItemState extends State<OrderItem> {
                               ],
                             ))
                         .toList()),
-              )
+              ):Container()
           ],
         ));
   }
