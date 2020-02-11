@@ -32,20 +32,21 @@ class MyApp extends StatelessWidget {
           value: Cart(),
         ),
         ChangeNotifierProxyProvider<Auth,Orders>(//This only will rebuild when Auth is changed 
-          create:(ctx)=> Orders(Auth().token,[]),
-          update: (ctx,auth,previousOrders)=>Orders(auth.token,previousOrders==null?[]:previousOrders.orders),
+          create:(ctx)=> Orders(Auth().token,Auth().userId,[]),
+          update: (ctx,auth,previousOrders)=>Orders(auth.token,auth.userId,previousOrders==null?[]:previousOrders.orders),
         ),
 
       ],
-      child:Consumer<Auth>(builder: (context,auth,_)=>MaterialApp(
+      child:Consumer<Auth>(builder: (ctx,auth,_)=>MaterialApp(
         title: "MyShop",
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             primarySwatch: Colors.purple,
             accentColor: Colors.deepOrange,
             fontFamily: 'Anton'),
-        //home: ProductsOverviewScreen(),
+
         home:auth.isAuth?ProductsOverviewScreen():AuthScreen(),
+        //Note:home screen is rebuild every time you go to any widget
 
         routes: {
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
           OrdersScreen.routeName: (ctx) => OrdersScreen(),
           UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
           EditProductScreen.routeName: (ctx) => EditProductScreen(),
-          AuthScreen.routeName: (ctx) => AuthScreen(),
+           AuthScreen.routeName: (ctx) => AuthScreen(),
         },
       ))
 
