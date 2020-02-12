@@ -11,6 +11,7 @@ import 'screens/orders_screen.dart';
 import 'screens/user_products_screen.dart';
 import 'screens/edit_product_screen.dart';
 import 'screens/auth_screen.dart.dart';
+import './screens/splash_screen.dart';
 
 void main() => runApp(
       MyApp(),
@@ -20,44 +21,60 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(
-          value: Auth(),
-        ),
-        ChangeNotifierProxyProvider<Auth,Products>(//This only will rebuild when Auth is changed 
-          create:(ctx)=> Products(Auth().token,Auth().userId,[]),
-          update: (ctx,auth,previousProducts)=>Products(auth.token,auth.userId,previousProducts==null?[]:previousProducts.items),
-        ),
-        ChangeNotifierProvider.value(
-          value: Cart(),
-        ),
-        ChangeNotifierProxyProvider<Auth,Orders>(//This only will rebuild when Auth is changed 
-          create:(ctx)=> Orders(Auth().token,Auth().userId,[]),
-          update: (ctx,auth,previousOrders)=>Orders(auth.token,auth.userId,previousOrders==null?[]:previousOrders.orders),
-        ),
+        providers: [
+          ChangeNotifierProvider.value(
+            value: Auth(),
+          ),
+          ChangeNotifierProxyProvider<Auth, Products>(
+            //This only will rebuild when Auth is changed
+            create: (ctx) => Products(Auth().token, Auth().userId, []),
+            update: (ctx, auth, previousProducts) => Products(
+                auth.token,
+                auth.userId,
+                previousProducts == null ? [] : previousProducts.items),
+          ),
+          ChangeNotifierProvider.value(
+            value: Cart(),
+          ),
+          ChangeNotifierProxyProvider<Auth, Orders>(
+            //This only will rebuild when Auth is changed
+            create: (ctx) => Orders(Auth().token, Auth().userId, []),
+            update: (ctx, auth, previousOrders) => Orders(
+                auth.token,
+                auth.userId,
+                previousOrders == null ? [] : previousOrders.orders),
+          ),
+        ],
+        child: Consumer<Auth>(
+            builder: (ctx, auth, _) => MaterialApp(
+                  //All Material app Will Rebuild When any change to Auth
+                  title: "MyShop",
+                  debugShowCheckedModeBanner: false,
+                  theme: ThemeData(
+                      primarySwatch: Colors.purple,
+                      accentColor: Colors.deepOrange,
+                      fontFamily: 'Anton'),
 
-      ],
-      child:Consumer<Auth>(builder: (ctx,auth,_)=>MaterialApp(
-        title: "MyShop",
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-            primarySwatch: Colors.purple,
-            accentColor: Colors.deepOrange,
-            fontFamily: 'Anton'),
+                  home: auth.isAuth
+                      ? ProductsOverviewScreen()
+                      : FutureBuilder(
+                          future: auth.tryAutoLogin(),
+                          builder: (context, snapshot) =>
+                              snapshot.connectionState ==
+                                      ConnectionState.waiting
+                                  ? SplashScreen()
+                                  : AuthScreen()),
+                  //Note:home screen is rebuild every time you go to any widget
 
-        home:auth.isAuth?ProductsOverviewScreen():AuthScreen(),
-        //Note:home screen is rebuild every time you go to any widget
-
-        routes: {
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
-          CartScreen.routeName: (ctx) => CartScreen(),
-          OrdersScreen.routeName: (ctx) => OrdersScreen(),
-          UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
-           AuthScreen.routeName: (ctx) => AuthScreen(),
-        },
-      ))
-
-    );
+                  routes: {
+                    ProductDetailScreen.routeName: (ctx) =>
+                        ProductDetailScreen(),
+                    CartScreen.routeName: (ctx) => CartScreen(),
+                    OrdersScreen.routeName: (ctx) => OrdersScreen(),
+                    UserProductsScreen.routeName: (ctx) => UserProductsScreen(),
+                    EditProductScreen.routeName: (ctx) => EditProductScreen(),
+                    //AuthScreen.routeName: (ctx) => AuthScreen(),
+                  },
+                )));
   }
 }
